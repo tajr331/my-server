@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لعبة إكس أو احترافية</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Tahoma", "Arial", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.25), transparent 35%),
+        radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.25), transparent 35%),
+        linear-gradient(135deg, #0f172a, #111827 55%, #020617);
+      color: #f8fafc;
+      padding: 20px;
+    }
+
+    .game-wrapper {
+      width: min(980px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .panel,
+    .board-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(18px);
+      border-radius: 26px;
+      padding: 24px;
+    }
+
+    .title {
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.2;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #38bdf8, #c084fc, #f472b6);
+      -webkit-background-clip: text;
+      color: transparent;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      color: #cbd5e1;
+      line-height: 1.8;
+      font-size: 15px;
+      margin-bottom: 22px;
+    }
+
+    .mode-box,
+    .score-box,
+    .players-box {
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: #e2e8f0;
+      font-weight: 700;
+    }
+
+    .buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button,
+    select {
+      border: none;
+      outline: none;
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .mode-btn,
+    .mark-btn {
+      background: rgba(51, 65, 85, 0.8);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .mode-btn:hover,
+    .mark-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(71, 85, 105, 0.95);
+    }
+
+    .mode-btn.active,
+    .mark-btn.active {
+      background: linear-gradient(135deg, #0284c7, #9333ea);
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(147, 51, 234, 0.35);
+    }
+
+    select {
+      width: 100%;
+      background: rgba(51, 65, 85, 0.9);
+      color: #f8fafc;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      margin-top: 8px;
+    }
+
+    .score-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .score-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.55);
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: #cbd5e1;
+    }
+
+    .score-item strong {
+      color: #f8fafc;
+      font-size: 20px;
+    }
+
+    .board-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 610px;
+    }
+
+    .status-card {
+      text-align: center;
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .status {
+      font-size: clamp(20px, 3vw, 28px);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .hint {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .board {
+      width: min(430px, 100%);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .cell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 24px;
+      color: #f8fafc;
+      font-size: clamp(48px, 8vw, 84px);
+      font-weight: 900;
+      cursor: pointer;
+      user-select: none;
+      overflow: hidden;
+      transition: 0.2s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 25px rgba(0,0,0,0.25);
+    }
+
+    .cell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255,255,255,0.15), transparent 60%);
+      opacity: 0;
+      transition: 0.2s ease;
+    }
+
+    .cell:hover::before {
+      opacity: 1;
+    }
+
+    .cell:hover {
+      transform: translateY(-4px) scale(1.01);
+      border-color: rgba(56, 189, 248, 0.55);
+    }
+
+    .cell.x {
+      color: #38bdf8;
+      text-shadow: 0 0 24px rgba(56, 189, 248, 0.45);
+    }
+
+    .cell.o {
+      color: #f472b6;
+      text-shadow: 0 0 24px rgba(244, 114, 182, 0.45);
+    }
+
+    .cell.win {
+      background: linear-gradient(145deg, rgba(22, 163, 74, 0.95), rgba(21, 128, 61, 0.92));
+      color: #fff;
+      animation: pulse 0.8s ease infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.04); }
+    }
+
+    .actions {
+      width: min(430px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 20px auto 0;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #0284c7, #9333ea);
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(14, 165, 233, 0.25);
+    }
+
+    .secondary-btn {
+      background: rgba(51, 65, 85, 0.85);
+      color: #e2e8f0;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .primary-btn:hover,
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+
+    .footer-note {
+      text-align: center;
+      color: #64748b;
+      margin-top: 16px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      .game-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .board-card {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .panel,
+      .board-card {
+        padding: 18px;
+        border-radius: 20px;
+      }
+
+      .board {
+        gap: 9px;
+      }
+
+      .cell {
+        border-radius: 18px;
+      }
+
+      .actions,
+      .buttons-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-wrapper">
+    <aside class="panel">
+      <h1 class="title">لعبة إكس أو</h1>
+      <p class="subtitle">
+        لعبة احترافية بتصميم حديث، يمكنك اللعب ضد صديق أو ضد الكمبيوتر مع مستويات مختلفة.
+      </p>
+
+      <div class="mode-box">
+        <div class="section-title">اختر نمط اللعب</div>
+        <div class="buttons-grid">
+          <button class="mode-btn active" data-mode="computer">ضد الكمبيوتر</button>
+          <button class="mode-btn" data-mode="friend">لاعبان</button>
+        </div>
+      </div>
+
+      <div class="mode-box" id="difficultyBox">
+        <div class="section-title">مستوى الكمبيوتر</div>
+        <select id="difficulty">
+          <option value="easy">سهل</option>
+          <option value="medium" selected>متوسط</option>
+          <option value="hard">صعب</option>
+        </select>
+      </div>
+
+      <div class="players-box">
+        <div class="section-title">اختر رمز اللاعب الأول</div>
+        <div class="buttons-grid">
+          <button class="mark-btn active" data-mark="X">X</button>
+          <button class="mark-btn" data-mark="O">O</button>
+        </div>
+      </div>
+
+      <div class="score-box">
+        <div class="section-title">لوحة النتائج</div>
+        <div class="score-list">
+          <div class="score-item"><span>فوز X</span><strong id="xScore">0</strong></div>
+          <div class="score-item"><span>فوز O</span><strong id="oScore">0</strong></div>
+          <div class="score-item"><span>تعادل</span><strong id="drawScore">0</strong></div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="board-card">
+      <div class="status-card">
+        <div class="status" id="status">دور اللاعب X</div>
+        <div class="hint" id="hint">اضغط على أي مربع فارغ للبدء</div>
+      </div>
+
+      <div class="board" id="board" aria-label="لوحة لعبة إكس أو">
+        <button class="cell" data-index="0" aria-label="المربع الأول"></button>
+        <button class="cell" data-index="1" aria-label="المربع الثاني"></button>
+        <button class="cell" data-index="2" aria-label="المربع الثالث"></button>
+        <button class="cell" data-index="3" aria-label="المربع الرابع"></button>
+        <button class="cell" data-index="4" aria-label="المربع الخامس"></button>
+        <button class="cell" data-index="5" aria-label="المربع السادس"></button>
+        <button class="cell" data-index="6" aria-label="المربع السابع"></button>
+        <button class="cell" data-index="7" aria-label="المربع الثامن"></button>
+        <button class="cell" data-index="8" aria-label="المربع التاسع"></button>
+      </div>
+
+      <div class="actions">
+        <button class="primary-btn" id="newRoundBtn">جولة جديدة</button>
+        <button class="secondary-btn" id="resetScoreBtn">تصفير النتائج</button>
+      </div>
+
+      <p class="footer-note">HTML + CSS + JavaScript فقط — بدون مكتبات خارجية</p>
+    </section>
+  </main>
+
+  <script>
+    const cells = Array.from(document.querySelectorAll(".cell"));
+    const statusText = document.getElementById("status");
+    const hintText = document.getElementById("hint");
+    const newRoundBtn = document.getElementById("newRoundBtn");
+    const resetScoreBtn = document.getElementById("resetScoreBtn");
+    const modeButtons = document.querySelectorAll(".mode-btn");
+    const markButtons = document.querySelectorAll(".mark-btn");
+    const difficultySelect = document.getElementById("difficulty");
+    const difficultyBox = document.getElementById("difficultyBox");
+    const xScoreEl = document.getElementById("xScore");
+    const oScoreEl = document.getElementById("oScore");
+    const drawScoreEl = document.getElementById("drawScore");
+
+    const winningLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    let board = Array(9).fill("");
+    let currentPlayer = "X";
+    let humanMark = "X";
+    let computerMark = "O";
+    let gameMode = "computer";
+    let gameActive = true;
+    let isComputerThinking = false;
+
+    let scores = {
+      X: 0,
+      O: 0,
+      draw: 0
+    };
+
+    function updateStatus(message, hint = "") {
+      statusText.textContent = message;
+      hintText.textContent = hint;
+    }
+
+    function renderBoard() {
+      cells.forEach((cell, index) => {
+        cell.textContent = board[index];
+        cell.classList.remove("x", "o", "win");
+
+        if (board[index] === "X") cell.classList.add("x");
+        if (board[index] === "O") cell.classList.add("o");
+      });
+    }
+
+    function updateScores() {
+      xScoreEl.textContent = scores.X;
+      oScoreEl.textContent = scores.O;
+      drawScoreEl.textContent = scores.draw;
+    }
+
+    function checkWinner(currentBoard = board) {
+      for (const line of winningLines) {
+        const [a, b, c] = line;
+        if (
+          currentBoard[a] &&
+          currentBoard[a] === currentBoard[b] &&
+          currentBoard[a] === currentBoard[c]
+        ) {
+          return {
+            winner: currentBoard[a],
+            line
+          };
+        }
+      }
+
+      if (currentBoard.every(Boolean)) {
+        return { winner: "draw", line: [] };
+      }
+
+      return null;
+    }
+
+    function finishGame(result) {
+      gameActive = false;
+
+      if (result.winner === "draw") {
+        scores.draw++;
+        updateStatus("تعادل!", "كانت جولة قوية، جرّب مرة أخرى.");
+      } else {
+        scores[result.winner]++;
+        result.line.forEach(index => cells[index].classList.add("win"));
+        updateStatus(`فاز اللاعب ${result.winner}!`, "اضغط على جولة جديدة للعب مرة أخرى.");
+      }
+
+      updateScores();
+    }
+
+    function switchTurn() {
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      updateStatus(`دور اللاعب ${currentPlayer}`, getTurnHint());
+    }
+
+    function getTurnHint() {
+      if (gameMode === "computer") {
+        return currentPlayer === humanMark ? "دورك الآن" : "الكمبيوتر يفكر...";
+      }
+      return "اختر مربعًا فارغًا";
+    }
+
+    function makeMove(index) {
+      if (!gameActive || board[index] || isComputerThinking) return;
+
+      if (gameMode === "computer" && currentPlayer !== humanMark) return;
+
+      placeMark(index, currentPlayer);
+
+      const result = checkWinner();
+      if (result) {
+        finishGame(result);
+        return;
+      }
+
+      switchTurn();
+
+      if (gameMode === "computer" && currentPlayer === computerMark) {
+        computerMove();
+      }
+    }
+
+    function placeMark(index, mark) {
+      board[index] = mark;
+      renderBoard();
+    }
+
+    function computerMove() {
+      isComputerThinking = true;
+      updateStatus("الكمبيوتر يفكر...", "انتظر حركة الكمبيوتر");
+
+      setTimeout(() => {
+        const move = getComputerMove();
+        placeMark(move, computerMark);
+
+        const result = checkWinner();
+        if (result) {
+          finishGame(result);
+          isComputerThinking = false;
+          return;
+        }
+
+        switchTurn();
+        isComputerThinking = false;
+      }, 550);
+    }
+
+    function getComputerMove() {
+      const difficulty = difficultySelect.value;
+      const emptyIndexes = getEmptyIndexes(board);
+
+      if (difficulty === "easy") {
+        return randomMove(emptyIndexes);
+      }
+
+      if (difficulty === "medium") {
+        return Math.random() < 0.55 ? bestMove() : randomMove(emptyIndexes);
+      }
+
+      return bestMove();
+    }
+
+    function randomMove(emptyIndexes) {
+      return emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+    }
+
+    function getEmptyIndexes(currentBoard) {
+      return currentBoard
+        .map((value, index) => value === "" ? index : null)
+        .filter(index => index !== null);
+    }
+
+    function bestMove() {
+      let bestScore = -Infinity;
+      let move = null;
+
+      for (const index of getEmptyIndexes(board)) {
+        board[index] = computerMark;
+        const score = minimax(board, 0, false);
+        board[index] = "";
+
+        if (score > bestScore) {
+          bestScore = score;
+          move = index;
+        }
+      }
+
+      return move;
+    }
+
+    function minimax(currentBoard, depth, isMaximizing) {
+      const result = checkWinner(currentBoard);
+
+      if (result) {
+        if (result.winner === computerMark) return 10 - depth;
+        if (result.winner === humanMark) return depth - 10;
+        return 0;
+      }
+
+      if (isMaximizing) {
+        let bestScore = -Infinity;
+
+        for (const index of getEmptyIndexes(currentBoard)) {
+          currentBoard[index] = computerMark;
+          const score = minimax(currentBoard, depth + 1, false);
+          currentBoard[index] = "";
+          bestScore = Math.max(score, bestScore);
+        }
+
+        return bestScore;
+      } else {
+        let bestScore = Infinity;
+
+        for (const index of getEmptyIndexes(currentBoard)) {
+          currentBoard[index] = humanMark;
+          const score = minimax(currentBoard, depth + 1, true);
+          currentBoard[index] = "";
+          bestScore = Math.min(score, bestScore);
+        }
+
+        return bestScore;
+      }
+    }
+
+    function startNewRound() {
+      board = Array(9).fill("");
+      currentPlayer = "X";
+      gameActive = true;
+      isComputerThinking = false;
+      renderBoard();
+      updateStatus(`دور اللاعب ${currentPlayer}`, getTurnHint());
+
+      if (gameMode === "computer" && currentPlayer === computerMark) {
+        computerMove();
+      }
+    }
+
+    function resetScores() {
+      scores = { X: 0, O: 0, draw: 0 };
+      updateScores();
+      startNewRound();
+    }
+
+    modeButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        modeButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        gameMode = button.dataset.mode;
+        difficultyBox.style.display = gameMode === "computer" ? "block" : "none";
+        startNewRound();
+      });
+    });
+
+    markButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        markButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        humanMark = button.dataset.mark;
+        computerMark = humanMark === "X" ? "O" : "X";
+        startNewRound();
+      });
+    });
+
+    cells.forEach(cell => {
+      cell.addEventListener("click", () => {
+        makeMove(Number(cell.dataset.index));
+      });
+    });
+
+    newRoundBtn.addEventListener("click", startNewRound);
+    resetScoreBtn.addEventListener("click", resetScores);
+    difficultySelect.addEventListener("change", startNewRound);
+
+    renderBoard();
+    updateScores();
+    updateStatus(`دور اللاعب ${currentPlayer}`, getTurnHint());
+  </script>
+</body>
+</html>
