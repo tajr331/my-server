@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chrome Dino Game</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f7f7f7;
+      color: #535353;
+      font-family: Arial, Tahoma, sans-serif;
+      overflow: hidden;
+    }
+
+    .page {
+      width: min(920px, 94vw);
+    }
+
+    .game-header {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 8px;
+      direction: ltr;
+      font-family: "Courier New", monospace;
+      font-weight: 700;
+      color: #535353;
+      letter-spacing: 1.8px;
+      font-size: 16px;
+    }
+
+    .game-wrap {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      background: #f7f7f7;
+    }
+
+    .score {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      z-index: 20;
+      direction: ltr;
+      font-family: "Courier New", monospace;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #535353;
+    }
+
+    .ground {
+      position: absolute;
+      left: 0;
+      bottom: 48px;
+      width: 2400px;
+      height: 26px;
+      background-image: url("data:image/svg+xml,%3Csvg width='1200' height='26' viewBox='0 0 1200 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 H1200' stroke='%23535353' stroke-width='2'/%3E%3Cpath d='M35 15 H67 M110 18 H155 M250 15 H315 M420 18 H445 M550 15 H610 M700 18 H760 M850 15 H900 M1030 18 H1090' stroke='%23535353' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");
+      background-repeat: repeat-x;
+      background-size: 1200px 26px;
+      transform: translateX(0);
+      z-index: 2;
+    }
+
+    .cloud {
+      position: absolute;
+      width: 84px;
+      height: 30px;
+      background-image: url("data:image/svg+xml,%3Csvg width='84' height='30' viewBox='0 0 84 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 21 H18 C19 12 27 11 31 15 C35 5 50 5 54 16 C61 12 69 15 70 22 H82' fill='none' stroke='%23b8b8b8' stroke-width='3' stroke-linecap='square'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: contain;
+      opacity: 0.95;
+      z-index: 1;
+    }
+
+    .dino {
+      position: absolute;
+      left: 54px;
+      bottom: 62px;
+      width: 88px;
+      height: 94px;
+      transform: scale(0.78);
+      transform-origin: bottom left;
+      z-index: 5;
+    }
+
+    .dino svg {
+      width: 88px;
+      height: 94px;
+      display: block;
+      shape-rendering: crispEdges;
+    }
+
+    .dino .run-a,
+    .dino .run-b,
+    .dino .duck-a,
+    .dino .duck-b,
+    .dino .dead-eye {
+      display: none;
+    }
+
+    .dino.running.step-a .run-a,
+    .dino.running.step-b .run-b {
+      display: block;
+    }
+
+    .dino.ducking {
+      width: 118px;
+      height: 60px;
+      transform: scale(0.78);
+    }
+
+    .dino.ducking .normal,
+    .dino.ducking .run-a,
+    .dino.ducking .run-b {
+      display: none !important;
+    }
+
+    .dino.ducking.step-a .duck-a,
+    .dino.ducking.step-b .duck-b {
+      display: block;
+    }
+
+    .dino.dead .normal-eye {
+      display: none;
+    }
+
+    .dino.dead .dead-eye {
+      display: block;
+    }
+
+    .obstacle {
+      position: absolute;
+      bottom: 62px;
+      z-index: 4;
+      shape-rendering: crispEdges;
+    }
+
+    .obstacle svg {
+      display: block;
+      shape-rendering: crispEdges;
+    }
+
+    .restart-icon {
+      display: none;
+      position: absolute;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 42px;
+      height: 42px;
+      z-index: 30;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+    }
+
+    .restart-icon.show {
+      display: block;
+    }
+
+    .restart-icon svg {
+      width: 42px;
+      height: 42px;
+      shape-rendering: crispEdges;
+    }
+
+    .start-message {
+      position: absolute;
+      top: 92px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      color: #535353;
+      z-index: 25;
+      font-family: Arial, Tahoma, sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+      white-space: nowrap;
+    }
+
+    .start-message.hidden {
+      display: none;
+    }
+
+    .mobile-buttons {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .mobile-buttons button {
+      border: 2px solid #535353;
+      background: transparent;
+      color: #535353;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .hint {
+      text-align: center;
+      color: #777;
+      font-size: 13px;
+      margin-top: 12px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 700px) {
+      .game-wrap {
+        height: 280px;
+      }
+
+      .dino {
+        left: 28px;
+      }
+
+      .score {
+        top: 12px;
+        right: 10px;
+        font-size: 14px;
+      }
+
+      .mobile-buttons {
+        display: grid;
+      }
+
+      .start-message {
+        font-size: 14px;
+        white-space: normal;
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="game-wrap" id="game">
+      <div class="score">HI <span id="hiScore">00000</span> <span id="score">00000</span></div>
+
+      <div class="cloud" id="cloud1"></div>
+      <div class="cloud" id="cloud2"></div>
+      <div class="cloud" id="cloud3"></div>
+
+      <div class="dino running step-a" id="dino" aria-label="dinosaur">
+        <svg viewBox="0 0 88 94" aria-hidden="true">
+          <g class="normal" fill="#535353">
+            <rect x="42" y="4" width="28" height="8" />
+            <rect x="42" y="12" width="38" height="8" />
+            <rect x="42" y="20" width="38" height="8" />
+            <rect x="42" y="28" width="28" height="8" />
+            <rect x="42" y="36" width="20" height="8" />
+            <rect x="34" y="36" width="16" height="8" />
+            <rect x="26" y="44" width="32" height="8" />
+            <rect x="18" y="52" width="40" height="8" />
+            <rect x="10" y="60" width="48" height="8" />
+            <rect x="2" y="52" width="16" height="8" />
+            <rect x="0" y="44" width="10" height="8" />
+            <rect x="50" y="44" width="8" height="8" />
+            <rect x="58" y="48" width="8" height="8" />
+            <rect x="18" y="68" width="32" height="8" />
+            <rect x="22" y="76" width="8" height="8" />
+            <rect x="42" y="76" width="8" height="8" />
+          </g>
+          <rect class="normal-eye" x="62" y="12" width="5" height="5" fill="#f7f7f7" />
+          <g class="dead-eye" stroke="#f7f7f7" stroke-width="3">
+            <path d="M61 12 L68 19 M68 12 L61 19" />
+          </g>
+          <g class="run-a" fill="#535353">
+            <rect x="22" y="76" width="8" height="16" />
+            <rect x="14" y="88" width="16" height="6" />
+            <rect x="42" y="76" width="8" height="8" />
+            <rect x="42" y="84" width="14" height="6" />
+          </g>
+          <g class="run-b" fill="#535353">
+            <rect x="22" y="76" width="8" height="8" />
+            <rect x="14" y="84" width="16" height="6" />
+            <rect x="42" y="76" width="8" height="16" />
+            <rect x="42" y="88" width="16" height="6" />
+          </g>
+          <g class="duck-a" fill="#535353">
+            <rect x="22" y="34" width="60" height="8" />
+            <rect x="14" y="42" width="68" height="8" />
+            <rect x="6" y="50" width="68" height="8" />
+            <rect x="0" y="42" width="14" height="8" />
+            <rect x="74" y="26" width="14" height="24" />
+            <rect x="66" y="26" width="16" height="8" />
+            <rect x="66" y="50" width="8" height="8" />
+            <rect x="20" y="58" width="8" height="14" />
+            <rect x="12" y="70" width="16" height="6" />
+            <rect x="52" y="58" width="8" height="8" />
+            <rect x="52" y="66" width="14" height="6" />
+            <rect x="79" y="32" width="4" height="4" fill="#f7f7f7" />
+          </g>
+          <g class="duck-b" fill="#535353">
+            <rect x="22" y="34" width="60" height="8" />
+            <rect x="14" y="42" width="68" height="8" />
+            <rect x="6" y="50" width="68" height="8" />
+            <rect x="0" y="42" width="14" height="8" />
+            <rect x="74" y="26" width="14" height="24" />
+            <rect x="66" y="26" width="16" height="8" />
+            <rect x="66" y="50" width="8" height="8" />
+            <rect x="20" y="58" width="8" height="8" />
+            <rect x="12" y="66" width="16" height="6" />
+            <rect x="52" y="58" width="8" height="14" />
+            <rect x="52" y="70" width="16" height="6" />
+            <rect x="79" y="32" width="4" height="4" fill="#f7f7f7" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="ground" id="ground"></div>
+
+      <div class="start-message" id="startMessage">
+        اضغط Space للبدء<br />↑ للقفز — ↓ للانخفاض
+      </div>
+
+      <button class="restart-icon" id="restartBtn" aria-label="restart">
+        <svg viewBox="0 0 42 42" aria-hidden="true">
+          <path d="M21 4 A17 17 0 1 1 7 12" fill="none" stroke="#535353" stroke-width="4" />
+          <path d="M7 4 V14 H17" fill="none" stroke="#535353" stroke-width="4" />
+        </svg>
+      </button>
+    </section>
+
+    <div class="mobile-buttons">
+      <button id="jumpBtn">قفز</button>
+      <button id="duckBtn">انخفاض</button>
+    </div>
+
+    <p class="hint">Space أو ↑ للقفز — ↓ للانخفاض — P للإيقاف المؤقت</p>
+  </main>
+
+  <script>
+    const game = document.getElementById("game");
+    const dino = document.getElementById("dino");
+    const ground = document.getElementById("ground");
+    const scoreEl = document.getElementById("score");
+    const hiScoreEl = document.getElementById("hiScore");
+    const startMessage = document.getElementById("startMessage");
+    const restartBtn = document.getElementById("restartBtn");
+    const jumpBtn = document.getElementById("jumpBtn");
+    const duckBtn = document.getElementById("duckBtn");
+    const clouds = [
+      document.getElementById("cloud1"),
+      document.getElementById("cloud2"),
+      document.getElementById("cloud3")
+    ];
+
+    const CACTUS_SVG = {
+      small: `
+        <svg width="34" height="70" viewBox="0 0 34 70">
+          <g fill="#535353">
+            <rect x="13" y="18" width="8" height="52" />
+            <rect x="5" y="34" width="8" height="22" />
+            <rect x="5" y="34" width="16" height="8" />
+            <rect x="21" y="26" width="8" height="26" />
+            <rect x="13" y="44" width="16" height="8" />
+          </g>
+        </svg>`,
+      medium: `
+        <svg width="46" height="76" viewBox="0 0 46 76">
+          <g fill="#535353">
+            <rect x="19" y="8" width="10" height="68" />
+            <rect x="7" y="30" width="10" height="30" />
+            <rect x="7" y="30" width="22" height="10" />
+            <rect x="31" y="22" width="10" height="34" />
+            <rect x="19" y="46" width="22" height="10" />
+          </g>
+        </svg>`,
+      double: `
+        <svg width="72" height="76" viewBox="0 0 72 76">
+          <g fill="#535353">
+            <rect x="8" y="20" width="10" height="56" />
+            <rect x="0" y="40" width="8" height="22" />
+            <rect x="0" y="40" width="18" height="8" />
+            <rect x="44" y="8" width="10" height="68" />
+            <rect x="32" y="30" width="10" height="30" />
+            <rect x="32" y="30" width="22" height="10" />
+            <rect x="56" y="25" width="10" height="32" />
+            <rect x="44" y="47" width="22" height="10" />
+          </g>
+        </svg>`
+    };
+
+    const BIRD_SVG = `
+      <svg width="70" height="48" viewBox="0 0 70 48">
+        <g fill="#535353">
+          <rect x="18" y="18" width="36" height="10" />
+          <rect x="10" y="22" width="12" height="8" />
+          <rect x="50" y="14" width="12" height="14" />
+          <rect x="60" y="18" width="8" height="6" />
+          <rect class="wing-a" x="28" y="4" width="16" height="16" />
+          <rect class="wing-b" x="28" y="28" width="16" height="16" />
+        </g>
+      </svg>`;
+
+    const state = {
+      status: "ready",
+      score: 0,
+      hi: Number(localStorage.getItem("chromeDinoProfessionalHi")) || 0,
+      speed: 6,
+      maxSpeed: 24,
+      speedLevel: 0,
+      gravity: 0.82,
+      jumpVelocity: 17.8,
+      y: 0,
+      vy: 0,
+      groundX: 0,
+      last: 0,
+      spawnTimer: 0,
+      nextSpawn: 1300,
+      runTimer: 0,
+      step: "a",
+      ducking: false,
+      obstacles: [],
+      clouds: []
+    };
+
+    function pad(num) {
+      return String(Math.floor(num)).padStart(5, "0");
+    }
+
+    function updateScore() {
+      scoreEl.textContent = pad(state.score);
+      hiScoreEl.textContent = pad(state.hi);
+    }
+
+    function initClouds() {
+      state.clouds = clouds.map((el, i) => ({
+        el,
+        x: game.clientWidth + i * 280 + 90,
+        y: [52, 86, 34][i],
+        speed: [0.34, 0.22, 0.28][i]
+      }));
+
+      state.clouds.forEach(c => {
+        c.el.style.left = c.x + "px";
+        c.el.style.top = c.y + "px";
+      });
+    }
+
+    function resetDino() {
+      state.y = 0;
+      state.vy = 0;
+      state.ducking = false;
+      dino.className = "dino running step-a";
+      dino.style.bottom = "62px";
+    }
+
+    function clearObstacles() {
+      state.obstacles.forEach(o => o.el.remove());
+      state.obstacles = [];
+    }
+
+    function startGame() {
+      clearObstacles();
+      resetDino();
+      state.status = "running";
+      state.score = 0;
+      state.speed = 6;
+      state.speedLevel = 0;
+      state.groundX = 0;
+      state.spawnTimer = 0;
+      state.nextSpawn = 1200;
+      state.last = performance.now();
+      startMessage.classList.add("hidden");
+      restartBtn.classList.remove("show");
+      updateScore();
+      requestAnimationFrame(loop);
+    }
+
+    function gameOver() {
+      state.status = "over";
+      dino.classList.add("dead");
+      restartBtn.classList.add("show");
+
+      if (state.score > state.hi) {
+        state.hi = Math.floor(state.score);
+        localStorage.setItem("chromeDinoProfessionalHi", state.hi);
+      }
+      updateScore();
+    }
+
+    function jump() {
+      if (state.status === "ready" || state.status === "over" || state.status === "paused") {
+        startGame();
+        return;
+      }
+
+      if (state.y === 0 && !state.ducking) {
+        state.vy = state.jumpVelocity;
+        dino.classList.remove("running");
+      }
+    }
+
+    function setDuck(value) {
+      if (state.status !== "running") return;
+      if (state.y > 0) return;
+      state.ducking = value;
+      dino.classList.toggle("ducking", value);
+      dino.classList.toggle("running", !value);
+    }
+
+    function togglePause() {
+      if (state.status === "running") {
+        state.status = "paused";
+        startMessage.innerHTML = "إيقاف مؤقت<br />اضغط P للمتابعة";
+        startMessage.classList.remove("hidden");
+      } else if (state.status === "paused") {
+        state.status = "running";
+        startMessage.classList.add("hidden");
+        state.last = performance.now();
+        requestAnimationFrame(loop);
+      }
+    }
+
+    function createObstacle() {
+      const el = document.createElement("div");
+      el.className = "obstacle";
+
+      let kind = "cactus";
+      let width = 46;
+      let height = 76;
+      let bottom = 62;
+
+      const birdAllowed = state.score > 350;
+      const roll = Math.random();
+
+      if (birdAllowed && roll > 0.72) {
+        kind = "bird";
+        width = 70;
+        height = 48;
+        const birdBottoms = [92, 122, 152];
+        bottom = birdBottoms[Math.floor(Math.random() * birdBottoms.length)];
+        el.innerHTML = BIRD_SVG;
+      } else {
+        const cactusTypes = ["small", "medium", "double"];
+        const pick = cactusTypes[Math.floor(Math.random() * cactusTypes.length)];
+        el.innerHTML = CACTUS_SVG[pick];
+        if (pick === "small") { width = 34; height = 70; }
+        if (pick === "medium") { width = 46; height = 76; }
+        if (pick === "double") { width = 72; height = 76; }
+      }
+
+      const obstacle = {
+        el,
+        kind,
+        x: game.clientWidth + 30,
+        width,
+        height,
+        bottom,
+        passed: false,
+        wingTimer: 0,
+        wing: true
+      };
+
+      el.style.left = obstacle.x + "px";
+      el.style.bottom = bottom + "px";
+      game.appendChild(el);
+      state.obstacles.push(obstacle);
+    }
+
+    function updateGround(delta) {
+      state.groundX -= state.speed * delta * 0.06;
+      if (state.groundX <= -1200) state.groundX = 0;
+      ground.style.transform = `translateX(${state.groundX}px)`;
+    }
+
+    function updateClouds(delta) {
+      state.clouds.forEach(c => {
+        c.x -= c.speed * delta * 0.06 * state.speed;
+        if (c.x < -120) {
+          c.x = game.clientWidth + 120 + Math.random() * 280;
+          c.y = 28 + Math.random() * 78;
+        }
+        c.el.style.left = c.x + "px";
+        c.el.style.top = c.y + "px";
+      });
+    }
+
+    function updateDino(delta) {
+      if (state.y > 0 || state.vy > 0) {
+        state.y += state.vy * delta * 0.06;
+        state.vy -= state.gravity * delta * 0.06;
+
+        if (state.y <= 0) {
+          state.y = 0;
+          state.vy = 0;
+          dino.classList.add("running");
+        }
+      }
+
+      dino.style.bottom = 62 + state.y + "px";
+
+      state.runTimer += delta;
+      const frameTime = Math.max(70, 120 - state.speed * 4);
+      if (state.runTimer >= frameTime) {
+        state.runTimer = 0;
+        state.step = state.step === "a" ? "b" : "a";
+        dino.classList.toggle("step-a", state.step === "a");
+        dino.classList.toggle("step-b", state.step === "b");
+      }
+    }
+
+    function updateObstacles(delta) {
+      state.spawnTimer += delta;
+
+      if (state.spawnTimer >= state.nextSpawn) {
+        createObstacle();
+        state.spawnTimer = 0;
+        const minDelay = Math.max(420, 1050 - state.speed * 35);
+        const randomExtra = Math.max(220, 520 - state.speed * 8) + Math.random() * 420;
+        state.nextSpawn = minDelay + randomExtra;
+      }
+
+      state.obstacles.forEach(o => {
+        o.x -= state.speed * delta * 0.06;
+        o.el.style.left = o.x + "px";
+
+        if (o.kind === "bird") {
+          o.wingTimer += delta;
+          if (o.wingTimer > 150) {
+            o.wingTimer = 0;
+            o.wing = !o.wing;
+            const a = o.el.querySelector(".wing-a");
+            const b = o.el.querySelector(".wing-b");
+            if (a && b) {
+              a.style.display = o.wing ? "block" : "none";
+              b.style.display = o.wing ? "none" : "block";
+            }
+          }
+        }
+      });
+
+      state.obstacles = state.obstacles.filter(o => {
+        if (o.x + o.width < -30) {
+          o.el.remove();
+          return false;
+        }
+        return true;
+      });
+    }
+
+    function getDinoBox() {
+      const baseLeft = 54;
+      const mobileShift = window.innerWidth <= 700 ? 28 : 54;
+      const scale = 0.78;
+
+      if (state.ducking) {
+        return {
+          left: mobileShift + 8,
+          right: mobileShift + 88,
+          bottom: 62,
+          top: 62 + 34
+        };
+      }
+
+      return {
+        left: mobileShift + 12,
+        right: mobileShift + 56,
+        bottom: 62 + state.y,
+        top: 62 + state.y + 68
+      };
+    }
+
+    function getObstacleBox(o) {
+      const shrink = o.kind === "bird" ? 10 : 7;
+      return {
+        left: o.x + shrink,
+        right: o.x + o.width - shrink,
+        bottom: o.bottom + 4,
+        top: o.bottom + o.height - 4
+      };
+    }
+
+    function hit(a, b) {
+      return a.left < b.right &&
+             a.right > b.left &&
+             a.bottom < b.top &&
+             a.top > b.bottom;
+    }
+
+    function checkCollision() {
+      const dBox = getDinoBox();
+      for (const o of state.obstacles) {
+        if (hit(dBox, getObstacleBox(o))) {
+          gameOver();
+          return;
+        }
+      }
+    }
+
+    function updateScoreAndSpeed(delta) {
+      state.score += delta * 0.014;
+
+      /*
+        زيادة السرعة تكون على مرحلتين:
+        1) زيادة ناعمة مستمرة مع النقاط.
+        2) قفزة بسيطة كل 100 نقطة حتى يشعر اللاعب أن اللعبة تزداد صعوبة.
+      */
+      const smoothIncrease = state.score / 95;
+      const levelIncrease = Math.floor(state.score / 100) * 0.55;
+      state.speed = Math.min(state.maxSpeed, 6 + smoothIncrease + levelIncrease);
+
+      updateScore();
+    }
+
+    function loop(now) {
+      if (state.status !== "running") return;
+      const delta = Math.min(now - state.last, 34);
+      state.last = now;
+
+      updateGround(delta);
+      updateClouds(delta);
+      updateDino(delta);
+      updateObstacles(delta);
+      updateScoreAndSpeed(delta);
+      checkCollision();
+
+      if (state.status === "running") requestAnimationFrame(loop);
+    }
+
+    document.addEventListener("keydown", e => {
+      if (["Space", "ArrowUp", "ArrowDown"].includes(e.code)) e.preventDefault();
+      if (e.code === "Space" || e.code === "ArrowUp") jump();
+      if (e.code === "ArrowDown") setDuck(true);
+      if (e.code === "KeyP") togglePause();
+    });
+
+    document.addEventListener("keyup", e => {
+      if (e.code === "ArrowDown") setDuck(false);
+    });
+
+    restartBtn.addEventListener("click", startGame);
+    game.addEventListener("click", () => {
+      if (state.status !== "running") startGame();
+    });
+
+    jumpBtn.addEventListener("click", jump);
+    jumpBtn.addEventListener("touchstart", e => {
+      e.preventDefault();
+      jump();
+    });
+
+    duckBtn.addEventListener("mousedown", () => setDuck(true));
+    duckBtn.addEventListener("mouseup", () => setDuck(false));
+    duckBtn.addEventListener("mouseleave", () => setDuck(false));
+    duckBtn.addEventListener("touchstart", e => {
+      e.preventDefault();
+      setDuck(true);
+    });
+    duckBtn.addEventListener("touchend", e => {
+      e.preventDefault();
+      setDuck(false);
+    });
+
+    window.addEventListener("resize", initClouds);
+
+    initClouds();
+    updateScore();
+  </script>
+</body>
+</html>
