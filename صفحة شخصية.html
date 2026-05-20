@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>رابطتي | صفحة التواصل الاحترافية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: radial-gradient(circle at 30% 10%, #1e2538, #0a0c14);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cairo', sans-serif;
+            padding: 1.5rem;
+            direction: rtl;
+            color: #fff;
+            position: relative;
+        }
+        /* زر الإعدادات العائم */
+        .settings-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(20, 25, 35, 0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transition: 0.3s;
+        }
+        .settings-toggle:hover {
+            background: rgba(255,255,255,0.15);
+            transform: rotate(45deg);
+        }
+        /* بطاقة العرض */
+        .glass-card {
+            background: rgba(20, 25, 35, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 2.5rem;
+            padding: 2.5rem 2rem 2rem;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: 0.3s;
+        }
+        .avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6dd5ed, #2193b0);
+            padding: 4px;
+            box-shadow: 0 15px 25px rgba(0,160,200,0.3);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .avatar i {
+            font-size: 3.5rem;
+            color: #1e2430;
+            background: #fff;
+            border-radius: 50%;
+            padding: 0.4rem;
+        }
+        .name {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(to left, #f0f2f5, #bdd3e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .bio {
+            color: #a0b9ce;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin: 0.5rem 0 0;
+            text-align: center;
+        }
+        .links-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            margin: 2rem 0 1.5rem;
+        }
+        .social-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 1.2rem;
+            padding: 0.8rem 1.4rem;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .social-btn i {
+            font-size: 1.4rem;
+            width: 2rem;
+            text-align: center;
+        }
+        .social-btn span {
+            flex: 1;
+        }
+        .social-btn::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            border-radius: 0 10px 10px 0;
+        }
+        .social-btn:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateX(-5px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.4);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .social-btn i.fa-whatsapp { color: #25D366; }
+        .social-btn i.fa-instagram { color: #E1306C; }
+        .social-btn i.fa-tiktok { color: #fe2c55; }
+        .social-btn i.fa-twitter { color: #1DA1F2; }
+        .social-btn i.fa-snapchat { color: #FFFC00; }
+        .social-btn i.fa-youtube { color: #FF0000; }
+        .social-btn i.fa-telegram { color: #0088cc; }
+        .social-btn i.fa-globe { color: #6dd5ed; }
+        /* قسم الباركود */
+        .qr-section {
+            background: rgba(0,0,0,0.25);
+            border-radius: 1.5rem;
+            padding: 1.2rem 0.8rem;
+            margin: 1.5rem 0 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .qr-box {
+            text-align: center;
+            flex: 1 1 120px;
+        }
+        .qr-box p {
+            font-size: 0.8rem;
+            color: #b0c4de;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+        }
+        .qr-code-container {
+            background: white;
+            padding: 0.6rem;
+            border-radius: 1rem;
+            display: inline-block;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+        }
+        .qr-code-container canvas {
+            display: block;
+            width: 100px;
+            height: 100px;
+        }
+        .copy-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #cfddee;
+            padding: 0.6rem 1.8rem;
+            border-radius: 3rem;
+            margin: 0 auto 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            width: fit-content;
+        }
+        .copy-link-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border-color: rgba(255,255,255,0.3);
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 1.2rem;
+            color: #65738b;
+            font-size: 0.7rem;
+        }
+        /* لوحة التحكم */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            background: rgba(10, 12, 20, 0.95);
+            backdrop-filter: blur(25px);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            padding: 2rem 1.5rem;
+            z-index: 200;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+        }
+        .settings-panel.open {
+            transform: translateX(0);
+        }
+        .settings-panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6dd5ed;
+        }
+        .settings-panel label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #ccddee;
+        }
+        .settings-panel input, .settings-panel select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            margin-bottom: 1.2rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .settings-panel input:focus {
+            border-color: #6dd5ed;
+            background: rgba(255,255,255,0.1);
+        }
+        .btn {
+            background: #2193b0;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Cairo', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .link-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            background: rgba(255,255,255,0.05);
+            padding: 0.5rem;
+            border-radius: 0.8rem;
+        }
+        .link-item select, .link-item input {
+            margin-bottom: 0;
+        }
+        .link-item button {
+            background: rgba(255,0,0,0.2);
+            border: none;
+            color: #ff7b7b;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .qr-custom-item {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            align-items: center;
+        }
+        .qr-custom-item input {
+            margin-bottom: 0;
+            flex: 1;
+        }
+        .close-panel {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-toggle" id="settingsToggle" title="تعديل المحتوى"><i class="fas fa-sliders-h"></i></div>
+
+    <!-- لوحة التحكم -->
+    <div class="settings-panel" id="settingsPanel">
+        <button class="close-panel" id="closePanelBtn">&times;</button>
+        <h2><i class="fas fa-pencil-alt"></i> تخصيص صفحتك</h2>
+        <label>الاسم الظاهر</label>
+        <input type="text" id="editName" placeholder="اسمك هنا">
+        <label>الوصف المختصر</label>
+        <input type="text" id="editBio" placeholder="مصمم | مطور | صانع محتوى">
+
+        <h3 style="margin:1.5rem 0 0.5rem; color:#b0c4de;">روابط التواصل</h3>
+        <div id="linksContainer"></div>
+        <button class="btn btn-outline" id="addLinkBtn" style="margin-top:0.5rem;"><i class="fas fa-plus"></i> إضافة رابط</button>
+
+        <h3 style="margin:1.5rem 0 0.5rem; color:#b0c4de;">باركودات إضافية</h3>
+        <div id="customQrContainer"></div>
+        <button class="btn btn-outline" id="addQrBtn"><i class="fas fa-qrcode"></i> إضافة باركود</button>
+
+        <button class="btn" id="saveSettingsBtn" style="width:100%; margin-top:2rem;"><i class="fas fa-save"></i> حفظ التغييرات</button>
+    </div>
+
+    <!-- بطاقة العرض الرئيسية -->
+    <div class="glass-card">
+        <div class="avatar-section">
+            <div class="avatar"><i class="fas fa-user-astronaut"></i></div>
+            <div class="name" id="displayName">اسمك هنا</div>
+            <div class="bio" id="displayBio">💡 مصمم | مطور | صانع محتوى</div>
+        </div>
+        <div class="links-grid" id="displayLinks"></div>
+        <div class="qr-section" id="displayQrSection"></div>
+        <button class="copy-link-btn" id="copyPageLinkBtn"><i class="fas fa-copy"></i> نسخ رابط الصفحة</button>
+        <div class="footer-note">✨ تابعني للمزيد · جميع الحقوق محفوظة © <span id="currentYear"></span></div>
+    </div>
+
+    <script>
+        (function() {
+            // بيانات افتراضية
+            const defaultData = {
+                name: 'اسمك هنا',
+                bio: '💡 مصمم | مطور | صانع محتوى',
+                links: [
+                    { platform: 'whatsapp', url: 'https://wa.me/966500000000' },
+                    { platform: 'instagram', url: 'https://instagram.com/username' },
+                    { platform: 'tiktok', url: 'https://tiktok.com/@username' },
+                    { platform: 'twitter', url: 'https://twitter.com/username' }
+                ],
+                customQrs: [
+                    { label: 'واتساب مباشر', url: 'https://wa.me/966500000000' }
+                ]
+            };
+
+            // استرجاع البيانات من localStorage
+            function loadData() {
+                const stored = localStorage.getItem('socialPageData');
+                return stored ? JSON.parse(stored) : defaultData;
+            }
+
+            function saveData(data) {
+                localStorage.setItem('socialPageData', JSON.stringify(data));
+            }
+
+            let currentData = loadData();
+
+            // مراسلة الأيقونات للمنصات
+            const platformIcons = {
+                whatsapp: 'fab fa-whatsapp',
+                instagram: 'fab fa-instagram',
+                tiktok: 'fab fa-tiktok',
+                twitter: 'fab fa-twitter',
+                snapchat: 'fab fa-snapchat-ghost',
+                youtube: 'fab fa-youtube',
+                telegram: 'fab fa-telegram-plane',
+                website: 'fas fa-globe',
+                other: 'fas fa-link'
+            };
+            const platformNames = {
+                whatsapp: 'واتساب',
+                instagram: 'انستقرام',
+                tiktok: 'تيك توك',
+                twitter: 'تويتر',
+                snapchat: 'سناب شات',
+                youtube: 'يوتيوب',
+                telegram: 'تيليجرام',
+                website: 'موقع إلكتروني',
+                other: 'رابط آخر'
+            };
+
+            // عرض البيانات على البطاقة
+            function renderCard() {
+                document.getElementById('displayName').textContent = currentData.name;
+                document.getElementById('displayBio').textContent = currentData.bio;
+
+                const linksGrid = document.getElementById('displayLinks');
+                linksGrid.innerHTML = '';
+                currentData.links.forEach(link => {
+                    const iconClass = platformIcons[link.platform] || 'fas fa-link';
+                    const name = platformNames[link.platform] || 'رابط';
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    a.className = 'social-btn';
+                    a.innerHTML = `<i class="${iconClass}"></i><span>${name}</span><i class="fas fa-arrow-left" style="opacity:0.6; font-size:0.9rem;"></i>`;
+                    linksGrid.appendChild(a);
+                });
+
+                renderQrCodes();
+            }
+
+            // عرض قسم الباركودات
+            function renderQrCodes() {
+                const qrSection = document.getElementById('displayQrSection');
+                qrSection.innerHTML = '';
+
+                // باركود الصفحة نفسه
+                const pageBox = document.createElement('div');
+                pageBox.className = 'qr-box';
+                pageBox.innerHTML = '<p>📱 امسح لزيارة الصفحة</p><div class="qr-code-container" id="pageQrContainer"></div>';
+                qrSection.appendChild(pageBox);
+
+                // باركودات مخصصة
+                currentData.customQrs.forEach((qr, index) => {
+                    const box = document.createElement('div');
+                    box.className = 'qr-box';
+                    box.innerHTML = `<p>${qr.label}</p><div class="qr-code-container" id="customQr_${index}"></div>`;
+                    qrSection.appendChild(box);
+                });
+
+                // توليد الباركودات بعد إضافتها للـ DOM
+                generateAllQrCodes();
+            }
+
+            function generateAllQrCodes() {
+                // باركود الصفحة
+                const pageContainer = document.getElementById('pageQrContainer');
+                if (pageContainer && typeof QRCode !== 'undefined') {
+                    pageContainer.innerHTML = '';
+                    new QRCode(pageContainer, {
+                        text: window.location.href,
+                        width: 100,
+                        height: 100,
+                        colorDark: "#0b0d14",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                }
+                // باركودات مخصصة
+                currentData.customQrs.forEach((qr, index) => {
+                    const container = document.getElementById(`customQr_${index}`);
+                    if (container && typeof QRCode !== 'undefined') {
+                        container.innerHTML = '';
+                        new QRCode(container, {
+                            text: qr.url,
+                            width: 100,
+                            height: 100,
+                            colorDark: "#0b0d14",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                });
+            }
+
+            // ملء لوحة التحكم
+            function populateSettings() {
+                document.getElementById('editName').value = currentData.name;
+                document.getElementById('editBio').value = currentData.bio;
+
+                const linksContainer = document.getElementById('linksContainer');
+                linksContainer.innerHTML = '';
+                currentData.links.forEach((link, idx) => {
+                    addLinkRow(link, idx);
+                });
+
+                const customQrContainer = document.getElementById('customQrContainer');
+                customQrContainer.innerHTML = '';
+                currentData.customQrs.forEach((qr, idx) => {
+                    addQrRow(qr, idx);
+                });
+            }
+
+            function addLinkRow(link = { platform: 'whatsapp', url: '' }, index = null) {
+                const container = document.getElementById('linksContainer');
+                const row = document.createElement('div');
+                row.className = 'link-item';
+                const idx = index !== null ? index : container.children.length;
+                row.innerHTML = `
+                    <select class="platform-select">
+                        <option value="whatsapp" ${link.platform === 'whatsapp' ? 'selected' : ''}>واتساب</option>
+                        <option value="instagram" ${link.platform === 'instagram' ? 'selected' : ''}>انستقرام</option>
+                        <option value="tiktok" ${link.platform === 'tiktok' ? 'selected' : ''}>تيك توك</option>
+                        <option value="twitter" ${link.platform === 'twitter' ? 'selected' : ''}>تويتر</option>
+                        <option value="snapchat" ${link.platform === 'snapchat' ? 'selected' : ''}>سناب شات</option>
+                        <option value="youtube" ${link.platform === 'youtube' ? 'selected' : ''}>يوتيوب</option>
+                        <option value="telegram" ${link.platform === 'telegram' ? 'selected' : ''}>تيليجرام</option>
+                        <option value="website" ${link.platform === 'website' ? 'selected' : ''}>موقع إلكتروني</option>
+                        <option value="other" ${link.platform === 'other' ? 'selected' : ''}>رابط آخر</option>
+                    </select>
+                    <input type="url" class="url-input" placeholder="الرابط" value="${link.url}">
+                    <button class="delete-link-btn"><i class="fas fa-trash"></i></button>
+                `;
+                row.querySelector('.delete-link-btn').addEventListener('click', () => {
+                    row.remove();
+                });
+                container.appendChild(row);
+            }
+
+            function addQrRow(qr = { label: '', url: '' }, index = null) {
+                const container = document.getElementById('customQrContainer');
+                const row = document.createElement('div');
+                row.className = 'qr-custom-item';
+                row.innerHTML = `
+                    <input type="text" class="qr-label-input" placeholder="العنوان" value="${qr.label}">
+                    <input type="url" class="qr-url-input" placeholder="الرابط" value="${qr.url}">
+                    <button class="delete-qr-btn"><i class="fas fa-trash"></i></button>
+                `;
+                row.querySelector('.delete-qr-btn').addEventListener('click', () => {
+                    row.remove();
+                });
+                container.appendChild(row);
+            }
+
+            // جمع البيانات من لوحة التحكم وحفظها
+            function collectAndSave() {
+                const name = document.getElementById('editName').value.trim() || 'اسمك';
+                const bio = document.getElementById('editBio').value.trim() || '';
+
+                const linkRows = document.querySelectorAll('#linksContainer .link-item');
+                const links = [];
+                linkRows.forEach(row => {
+                    const platform = row.querySelector('.platform-select').value;
+                    const url = row.querySelector('.url-input').value.trim();
+                    if (url) links.push({ platform, url });
+                });
+
+                const qrRows = document.querySelectorAll('#customQrContainer .qr-custom-item');
+                const customQrs = [];
+                qrRows.forEach(row => {
+                    const label = row.querySelector('.qr-label-input').value.trim();
+                    const url = row.querySelector('.qr-url-input').value.trim();
+                    if (label && url) customQrs.push({ label, url });
+                });
+
+                currentData = { name, bio, links, customQrs };
+                saveData(currentData);
+                renderCard();
+                closePanel();
+            }
+
+            function closePanel() {
+                document.getElementById('settingsPanel').classList.remove('open');
+            }
+
+            function openPanel() {
+                populateSettings();
+                document.getElementById('settingsPanel').classList.add('open');
+            }
+
+            // أحداث الأزرار
+            document.getElementById('settingsToggle').addEventListener('click', openPanel);
+            document.getElementById('closePanelBtn').addEventListener('click', closePanel);
+            document.getElementById('addLinkBtn').addEventListener('click', () => addLinkRow());
+            document.getElementById('addQrBtn').addEventListener('click', () => addQrRow());
+            document.getElementById('saveSettingsBtn').addEventListener('click', collectAndSave);
+
+            // زر نسخ الرابط
+            document.getElementById('copyPageLinkBtn').addEventListener('click', function() {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    const btn = this;
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> تم النسخ!';
+                    btn.style.background = 'rgba(37,211,102,0.25)';
+                    setTimeout(() => {
+                        btn.innerHTML = orig;
+                        btn.style.background = 'rgba(255,255,255,0.08)';
+                    }, 2000);
+                }).catch(() => alert('تعذر النسخ'));
+            });
+
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+            // عرض أولي
+            renderCard();
+
+            // إغلاق اللوحة عند النقر خارجها (اختياري)
+            window.addEventListener('click', (e) => {
+                const panel = document.getElementById('settingsPanel');
+                const toggle = document.getElementById('settingsToggle');
+                if (!panel.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
+                    if (panel.classList.contains('open')) closePanel();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
